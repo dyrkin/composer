@@ -311,13 +311,17 @@ func (f *Composer) ReadString(len int) (v string, err error) {
 	return
 }
 
-func (f *Composer) Flush() error {
+func (f *Composer) Flush() (err error) {
 	if f.rw == nil {
-		return errors.New("Writer is not defined")
+		err = errors.New("Writer is not defined")
+		return
 	}
-	f.rw.Write(f.b.Bytes())
+	_, err = f.rw.Write(f.b.Bytes())
+	if err != nil {
+		return
+	}
 	f.b = &bytes.Buffer{}
-	return nil
+	return
 }
 
 func (f *Composer) Make() []byte {
