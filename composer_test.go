@@ -2,6 +2,7 @@ package composer
 
 import (
 	"bytes"
+	"encoding/binary"
 	"testing"
 
 	. "gopkg.in/check.v1"
@@ -24,6 +25,30 @@ func (s *MySuite) TestWrite(c *C) {
 		cmp.Uint16be(1).Uint16be(65534).Uint32be(1).Uint64be(1).Make(),
 		DeepEquals,
 		[]byte{0, 1, 255, 254, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1})
+
+	cmp = New()
+	c.Assert(
+		cmp.Uint(binary.LittleEndian, 9, 3).Make(),
+		DeepEquals,
+		[]byte{9, 0, 0})
+
+	cmp = New()
+	c.Assert(
+		cmp.Uint(binary.BigEndian, 9, 3).Make(),
+		DeepEquals,
+		[]byte{0, 0, 9})
+
+	cmp = New()
+	c.Assert(
+		cmp.Int(binary.LittleEndian, -9, 3).Make(),
+		DeepEquals,
+		[]byte{247, 255, 255})
+
+	cmp = New()
+	c.Assert(
+		cmp.Int(binary.BigEndian, -9, 3).Make(),
+		DeepEquals,
+		[]byte{255, 255, 247})
 }
 
 func (s *MySuite) TestRead(c *C) {
@@ -46,4 +71,20 @@ func (s *MySuite) TestRead(c *C) {
 	c.Assert(b, Equals, uint32(1))
 	b, _ = cmp.ReadUint64be()
 	c.Assert(b, Equals, uint64(1))
+
+	cmp = NewWithRW(bytes.NewBuffer([]byte{9, 0, 0}))
+	u := cmp.ReadUint(binary.LittleEndian, 3)
+	c.Assert(u, DeepEquals, uint64(9))
+
+	cmp = NewWithRW(bytes.NewBuffer([]byte{0, 0, 9}))
+	u = cmp.ReadUint(binary.BigEndian, 3)
+	c.Assert(u, DeepEquals, uint64(9))
+
+	cmp = NewWithRW(bytes.NewBuffer([]byte{247, 255, 255}))
+	z := cmp.ReadInt(binary.LittleEndian, 3)
+	c.Assert(z, DeepEquals, int64(-9))
+
+	cmp = NewWithRW(bytes.NewBuffer([]byte{255, 255, 247}))
+	z = cmp.ReadInt(binary.BigEndian, 3)
+	c.Assert(z, DeepEquals, int64(-9))
 }
