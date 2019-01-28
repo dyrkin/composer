@@ -176,6 +176,11 @@ func (f *Composer) ReadBytes(len int) (buf []byte, err error) {
 	return
 }
 
+func (f *Composer) ReadBuf(buf []byte) (err error) {
+	_, err = io.ReadFull(f.rw, buf)
+	return
+}
+
 func (f *Composer) ReadUint8() (byte, error) {
 	return f.ReadByte()
 }
