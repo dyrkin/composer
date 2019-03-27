@@ -49,6 +49,30 @@ func (s *MySuite) TestWrite(c *C) {
 		cmp.Int(binary.BigEndian, -9, 3).Make(),
 		DeepEquals,
 		[]byte{255, 255, 247})
+
+	cmp = New()
+	c.Assert(
+		cmp.Int(binary.LittleEndian, 2809, 2).Make(),
+		DeepEquals,
+		[]byte{0xf9, 0xa})
+
+	cmp = New()
+	c.Assert(
+		cmp.Int(binary.LittleEndian, -2809, 2).Make(),
+		DeepEquals,
+		[]byte{0x7, 0xf5})
+
+	cmp = New()
+	c.Assert(
+		cmp.Int(binary.BigEndian, 2809, 2).Make(),
+		DeepEquals,
+		[]byte{0xa, 0xf9})
+
+	cmp = New()
+	c.Assert(
+		cmp.Int(binary.BigEndian, -2809, 2).Make(),
+		DeepEquals,
+		[]byte{0xf5, 0x7})
 }
 
 func (s *MySuite) TestRead(c *C) {
@@ -87,4 +111,20 @@ func (s *MySuite) TestRead(c *C) {
 	cmp = NewWithRW(bytes.NewBuffer([]byte{255, 255, 247}))
 	z = cmp.ReadInt(binary.BigEndian, 3)
 	c.Assert(z, DeepEquals, int64(-9))
+
+	cmp = NewWithRW(bytes.NewBuffer([]byte{0xf9, 0xa}))
+	z = cmp.ReadInt(binary.LittleEndian, 2)
+	c.Assert(z, DeepEquals, int64(2809))
+
+	cmp = NewWithRW(bytes.NewBuffer([]byte{0x7, 0xf5}))
+	z = cmp.ReadInt(binary.LittleEndian, 2)
+	c.Assert(z, DeepEquals, int64(-2809))
+
+	cmp = NewWithRW(bytes.NewBuffer([]byte{0xa, 0xf9}))
+	z = cmp.ReadInt(binary.BigEndian, 2)
+	c.Assert(z, DeepEquals, int64(2809))
+
+	cmp = NewWithRW(bytes.NewBuffer([]byte{0xf5, 0x7}))
+	z = cmp.ReadInt(binary.BigEndian, 2)
+	c.Assert(z, DeepEquals, int64(-2809))
 }

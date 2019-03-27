@@ -374,12 +374,20 @@ func (f *Composer) ReadInt(endianness binary.ByteOrder, size int) int64 {
 	if endianness == binary.BigEndian {
 		for i := 0; i < size; i++ {
 			t := buf[i]
-			v = v | int64(int8(t))<<byte((size-i-1)*8)
+			if i == 0 {
+				v = v | int64(int8(t))<<byte((size-i-1)*8)
+			} else {
+				v = v | int64(t)<<byte((size-i-1)*8)
+			}
 		}
 	} else {
 		for i := 0; i < size; i++ {
 			t := buf[i]
-			v = v | int64(int8(t))<<byte(i*8)
+			if i != 0 {
+				v = v | int64(int8(t))<<byte(i*8)
+			} else {
+				v = v | int64(t)<<byte(i*8)
+			}
 		}
 	}
 	return v
